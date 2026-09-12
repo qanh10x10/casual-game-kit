@@ -1,0 +1,31 @@
+---
+description: Audit and build small Unity puzzle-game surfaces from evidence-backed code, hierarchy, state, and data contracts.
+globs: Assets/**/*.cs, Assets/**/*.prefab, Assets/**/*.unity
+alwaysApply: false
+---
+
+# Puzzle Game UI (Cursor Rule)
+
+When modifying or designing Unity puzzle game UI surfaces (Home, HUD, Popups, Quests, Rewards, Shop, Upgrades):
+
+## Operating Contract
+
+Every UI task must produce a **surface contract** before code or prefab mutation:
+```text
+surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
+        -> owner -> persistence -> events -> validation evidence
+```
+
+## Key Rules
+
+1. **Definitions vs State:** Definitions live in authoring assets (ScriptableObject, CSV). Player progress, claims, and currencies live in runtime state models. UI must never mutate authoring assets directly.
+2. **Idempotent Claims:** Validate availability -> Apply reward entries once -> Persist state -> Emit refresh event.
+3. **Explicit States:** Every button/item must handle loading, empty, locked, available, selected, owned, claimed, and error. Never communicate state through color alone.
+4. **Hierarchy:** Semantic and shallow: `Screen` -> `SafeArea` -> `Header`, `Content`, `Footer`, `Overlay`.
+5. **Preserve GUIDs:** Never delete and recreate serialized references/prefabs when refactoring.
+6. **Detailed References:** Refer to `.agents/skills/puzzle-game-ui/references/` (or `~/.agents/skills/puzzle-game-ui/references/`):
+   - `ugui-layout-blueprint.md`: 1080x1920 Canvas, anchors, pivots, Safe Area, ScrollRect.
+   - `ui-manager-blueprint.md`: Central UIManager prefab ownership.
+   - `ui-popup-script-contracts.md`: Popup, controller, and item boundaries.
+   - `data-contracts.md`: Currency, rewards, and transaction schemas.
+   - `ai-spec-template.md`: Contract template to use before coding.

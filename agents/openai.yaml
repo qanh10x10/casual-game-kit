@@ -1,0 +1,4 @@
+interface:
+  display_name: "Puzzle Game UI"
+  short_description: "Design and implement small Unity puzzle game UI flows."
+  default_prompt: "Audit this Unity puzzle game surface, then propose code, hierarchy, data, and validation."

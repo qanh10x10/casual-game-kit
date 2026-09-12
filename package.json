@@ -1,0 +1,36 @@
+{
+  "name": "casual-game-kit",
+  "version": "1.0.0",
+  "description": "Universal Agent Skill for Unity Casual & Puzzle Game UI (Copilot, Claude, Codex, Cursor, Windsurf, Antigravity, Cline)",
+  "bin": {
+    "casual-game-kit": "./bin/cli.js",
+    "puzzle-game-kit": "./bin/cli.js",
+    "puzzle-game-ui": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "SKILL.md",
+    "agents",
+    "references",
+    "adapters",
+    "README.md"
+  ],
+  "keywords": [
+    "agent-skill",
+    "unity",
+    "ugui",
+    "casual-game",
+    "puzzle-game",
+    "github-copilot",
+    "claude-code",
+    "cursor",
+    "windsurf",
+    "antigravity",
+    "codex"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qanh10x10/casual-game-kit.git"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,10 @@
+# Cline Rules: Unity Puzzle Game UI
+
+When working on Unity UI tasks (Home, HUD, Daily Reward, Quests, Shop, Popups, Results):
+
+1. **Surface Contract First:** Output surface contract before code or prefab edits:
+   `surface -> user job -> states -> actions -> data source -> hierarchy -> bindings -> owner -> persistence -> events -> validation evidence`
+2. **Data Boundaries:** ScriptableObjects and CSVs are read-only definitions. Player state and view models are mutable. UI never directly mutates definition assets.
+3. **Idempotent Rewards:** Validate -> Apply -> Persist -> Emit Refresh Event.
+4. **Layout:** 1080x1920 reference resolution, Safe Area adapter, shallow semantic hierarchy (`Screen/SafeArea/Header|Content|Footer|Overlay`).
+5. **Reference Blueprints:** Check `.agents/skills/puzzle-game-ui/references/` or `~/.agents/skills/puzzle-game-ui/references/`.

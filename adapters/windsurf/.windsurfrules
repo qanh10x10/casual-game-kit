@@ -1,0 +1,17 @@
+# Puzzle Game UI Rules (Windsurf / Cascade)
+
+When auditing or building Unity puzzle game UI (Home, HUD, Daily Reward, Quests, Shop, Popups):
+
+## Surface Contract (Produce before editing)
+```text
+surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
+        -> owner -> persistence -> events -> validation evidence
+```
+
+## Non-Negotiable Rules
+- Definitions (ScriptableObjects/CSVs) are read-only at runtime; mutate player state models only.
+- Reward claims are idempotent (validate -> apply once -> persist -> emit refresh event).
+- Every interactive element must define disabled reasons and explicit visual states.
+- Hierarchy structure: Screen -> SafeArea -> Header / Content / Footer / Overlay.
+- Detailed specs and blueprints located in:
+  `~/.agents/skills/puzzle-game-ui/references/` or `./.agents/skills/puzzle-game-ui/references/`
