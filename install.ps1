@@ -54,17 +54,20 @@ function Install-SkillDir {
 if ($Scope -eq 'Global') {
     Write-Host "`n=== Installing Globally for Current User ===" -ForegroundColor Cyan
     
-    # 1. GitHub Copilot / Open Agent Skills standard (~/.agents/skills)
-    $agentsGlobal = Join-Path $HOME ".agents\skills\puzzle-game-ui"
+    # 1. GitHub Copilot, Roo Code, OpenAgent standard (~/.agents/skills)
+    $agentsGlobal = Join-Path $HOME ".agents\skills\casual-game-kit"
     Install-SkillDir -DestPath $agentsGlobal -SourcePath $sourceDir -Method $Method
+    Install-SkillDir -DestPath (Join-Path $HOME ".agents\skills\puzzle-game-ui") -SourcePath $sourceDir -Method $Method
 
     # 2. Claude Code global (~/.claude/skills)
-    $claudeGlobal = Join-Path $HOME ".claude\skills\puzzle-game-ui"
+    $claudeGlobal = Join-Path $HOME ".claude\skills\casual-game-kit"
     Install-SkillDir -DestPath $claudeGlobal -SourcePath $sourceDir -Method $Method
+    Install-SkillDir -DestPath (Join-Path $HOME ".claude\skills\puzzle-game-ui") -SourcePath $sourceDir -Method $Method
 
     # 3. OpenAI Codex global (~/.codex/skills)
-    $codexGlobal = Join-Path $HOME ".codex\skills\puzzle-game-ui"
+    $codexGlobal = Join-Path $HOME ".codex\skills\casual-game-kit"
     Install-SkillDir -DestPath $codexGlobal -SourcePath $sourceDir -Method $Method
+    Install-SkillDir -DestPath (Join-Path $HOME ".codex\skills\puzzle-game-ui") -SourcePath $sourceDir -Method $Method
 
     Write-Host "`nGlobal setup completed! Available in:" -ForegroundColor Green
     Write-Host "  - GitHub Copilot (VS Code & CLI) -> $agentsGlobal"
@@ -83,19 +86,19 @@ elseif ($Scope -eq 'Project') {
     Write-Host "`n=== Installing into Project: $absTarget ===" -ForegroundColor Cyan
 
     # 1. .agents/skills (Copilot, OpenAgent, Codex)
-    $projAgents = Join-Path $absTarget ".agents\skills\puzzle-game-ui"
+    $projAgents = Join-Path $absTarget ".agents\skills\casual-game-kit"
     Install-SkillDir -DestPath $projAgents -SourcePath $sourceDir -Method $Method
 
     # 2. .claude/skills (Claude Code)
-    $projClaude = Join-Path $absTarget ".claude\skills\puzzle-game-ui"
+    $projClaude = Join-Path $absTarget ".claude\skills\casual-game-kit"
     Install-SkillDir -DestPath $projClaude -SourcePath $sourceDir -Method $Method
 
-    # 3. Cursor rules (.cursor/rules/puzzle-game-ui.mdc)
+    # 3. Cursor rules (.cursor/rules/casual-game-kit.mdc)
     $cursorRulesDir = Join-Path $absTarget ".cursor\rules"
     if (!(Test-Path $cursorRulesDir)) { New-Item -ItemType Directory -Path $cursorRulesDir -Force | Out-Null }
-    $cursorSrc = Join-Path $sourceDir "adapters\cursor\puzzle-game-ui.mdc"
-    Copy-Item -Path $cursorSrc -Destination (Join-Path $cursorRulesDir "puzzle-game-ui.mdc") -Force
-    Write-Host "[OK] Cursor rule installed at: $cursorRulesDir\puzzle-game-ui.mdc" -ForegroundColor Green
+    $cursorSrc = Join-Path $sourceDir "adapters\cursor\casual-game-kit.mdc"
+    Copy-Item -Path $cursorSrc -Destination (Join-Path $cursorRulesDir "casual-game-kit.mdc") -Force
+    Write-Host "[OK] Cursor rule installed at: $cursorRulesDir\casual-game-kit.mdc" -ForegroundColor Green
 
     # 4. Windsurf rules (.windsurfrules)
     $windsurfSrc = Join-Path $sourceDir "adapters\windsurf\.windsurfrules"
@@ -125,11 +128,11 @@ elseif ($Scope -eq 'Project') {
         Write-Host "[OK] Cline rules created at: $clineDest" -ForegroundColor Green
     }
 
-    # 7. Continue.dev (.continue/prompts/puzzle-game-ui.prompt)
+    # 7. Continue.dev (.continue/prompts/casual-game-kit.prompt)
     $continuePromptsDir = Join-Path $absTarget ".continue\prompts"
     if (!(Test-Path $continuePromptsDir)) { New-Item -ItemType Directory -Path $continuePromptsDir -Force | Out-Null }
-    Copy-Item -Path (Join-Path $sourceDir "adapters\continue\puzzle-game-ui.prompt") -Destination (Join-Path $continuePromptsDir "puzzle-game-ui.prompt") -Force
-    Write-Host "[OK] Continue.dev prompt installed at: $continuePromptsDir\puzzle-game-ui.prompt" -ForegroundColor Green
+    Copy-Item -Path (Join-Path $sourceDir "adapters\continue\casual-game-kit.prompt") -Destination (Join-Path $continuePromptsDir "casual-game-kit.prompt") -Force
+    Write-Host "[OK] Continue.dev prompt installed at: $continuePromptsDir\casual-game-kit.prompt" -ForegroundColor Green
 
     Write-Host "`nProject setup completed for: $absTarget" -ForegroundColor Green
 }

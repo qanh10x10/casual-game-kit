@@ -11,21 +11,24 @@ if [ "$SCOPE" = "global" ]; then
     echo "=== Installing Globally for Current User ==="
     
     # 1. ~/.agents/skills (GitHub Copilot, Codex, Roo, Antigravity)
-    AGENTS_DIR="$HOME/.agents/skills/puzzle-game-ui"
+    AGENTS_DIR="$HOME/.agents/skills/casual-game-kit"
     mkdir -p "$HOME/.agents/skills"
     ln -sfn "$SOURCE_DIR" "$AGENTS_DIR"
+    ln -sfn "$SOURCE_DIR" "$HOME/.agents/skills/puzzle-game-ui"
     echo "[OK] Linked to: $AGENTS_DIR"
 
     # 2. ~/.claude/skills (Claude Code)
-    CLAUDE_DIR="$HOME/.claude/skills/puzzle-game-ui"
+    CLAUDE_DIR="$HOME/.claude/skills/casual-game-kit"
     mkdir -p "$HOME/.claude/skills"
     ln -sfn "$SOURCE_DIR" "$CLAUDE_DIR"
+    ln -sfn "$SOURCE_DIR" "$HOME/.claude/skills/puzzle-game-ui"
     echo "[OK] Linked to: $CLAUDE_DIR"
 
     # 3. ~/.codex/skills (OpenAI Codex)
-    CODEX_DIR="$HOME/.codex/skills/puzzle-game-ui"
+    CODEX_DIR="$HOME/.codex/skills/casual-game-kit"
     mkdir -p "$HOME/.codex/skills"
     ln -sfn "$SOURCE_DIR" "$CODEX_DIR"
+    ln -sfn "$SOURCE_DIR" "$HOME/.codex/skills/puzzle-game-ui"
     echo "[OK] Linked to: $CODEX_DIR"
 
     echo "Global install complete!"
@@ -39,15 +42,15 @@ elif [ "$SCOPE" = "project" ]; then
 
     # .agents/skills
     mkdir -p "$TARGET_ABS/.agents/skills"
-    ln -sfn "$SOURCE_DIR" "$TARGET_ABS/.agents/skills/puzzle-game-ui"
+    ln -sfn "$SOURCE_DIR" "$TARGET_ABS/.agents/skills/casual-game-kit"
 
     # .claude/skills
     mkdir -p "$TARGET_ABS/.claude/skills"
-    ln -sfn "$SOURCE_DIR" "$TARGET_ABS/.claude/skills/puzzle-game-ui"
+    ln -sfn "$SOURCE_DIR" "$TARGET_ABS/.claude/skills/casual-game-kit"
 
     # Cursor
     mkdir -p "$TARGET_ABS/.cursor/rules"
-    cp -f "$SOURCE_DIR/adapters/cursor/puzzle-game-ui.mdc" "$TARGET_ABS/.cursor/rules/"
+    cp -f "$SOURCE_DIR/adapters/cursor/casual-game-kit.mdc" "$TARGET_ABS/.cursor/rules/"
 
     # Windsurf
     if [ ! -f "$TARGET_ABS/.windsurfrules" ]; then
@@ -68,7 +71,7 @@ elif [ "$SCOPE" = "project" ]; then
 
     # Continue.dev
     mkdir -p "$TARGET_ABS/.continue/prompts"
-    cp -f "$SOURCE_DIR/adapters/continue/puzzle-game-ui.prompt" "$TARGET_ABS/.continue/prompts/"
+    cp -f "$SOURCE_DIR/adapters/continue/casual-game-kit.prompt" "$TARGET_ABS/.continue/prompts/"
 
     echo "Project install complete for $TARGET_ABS!"
 fi
