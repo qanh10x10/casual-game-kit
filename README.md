@@ -19,20 +19,39 @@ Repository: [https://github.com/qanh10x10/casual-game-kit.git](https://github.co
 
 ---
 
-## 1. Quick Start via NPX (Recommended)
+## 1. Quick Install (1-Line Commands)
 
-The skill kit includes a zero-dependency Node.js CLI installer that runs immediately with `npx`:
-
-### A. Run remotely (No clone required)
-```bash
-# Install globally across all IDEs and agents on your machine:
-npx github:qanh10x10/casual-game-kit --global
-
-# Or install directly into the current Unity project directory:
-npx github:qanh10x10/casual-game-kit
+### A. Windows (PowerShell - Zero Dependencies, No Node/Git required)
+Open PowerShell and run:
+```powershell
+irm https://raw.githubusercontent.com/qanh10x10/casual-game-kit/main/install.ps1 | iex
 ```
 
-### B. Run after cloning the repository
+### B. macOS / Linux (Bash - Zero Dependencies)
+Open Terminal and run:
+```bash
+curl -fsSL https://raw.githubusercontent.com/qanh10x10/casual-game-kit/main/install.sh | bash
+```
+
+### C. Node.js / NPX
+> **Note for npm 11+ / Node 22+**: npm 11+ disables fetching from Git URLs by default (`EALLOWGIT`). Use the `--allow-git=all` flag on fresh machines:
+
+```bash
+# Install globally across all IDEs and agents on your machine:
+npx --allow-git=all github:qanh10x10/casual-game-kit --global
+
+# Or install directly into the current Unity project directory:
+npx --allow-git=all github:qanh10x10/casual-game-kit
+
+# Or enable git dependencies once globally in npm:
+npm config set allow-git all
+npx github:qanh10x10/casual-game-kit --global
+```
+
+---
+
+## 2. Run After Cloning Repository
+
 ```bash
 git clone https://github.com/qanh10x10/casual-game-kit.git
 cd casual-game-kit
@@ -44,29 +63,13 @@ node ./bin/cli.js --global
 node ./bin/cli.js -p /path/to/MyUnityProject
 ```
 
----
-
-## 2. Alternative Installation Scripts
-
-If Node.js is not available, shell scripts are provided out of the box:
-
-### Windows (PowerShell)
+### Or using local scripts:
 ```powershell
-# Global user install:
+# Windows PowerShell:
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Scope Global
 
-# Project install:
-powershell -ExecutionPolicy Bypass -File .\install.ps1 -Scope Project -TargetPath "D:\Projects\MyGame"
-```
-
-### macOS / Linux (Bash)
-```bash
-# Global user install:
-chmod +x ./install.sh
-./install.sh global
-
-# Project install:
-./install.sh project /path/to/MyGame
+# macOS / Linux Bash:
+chmod +x ./install.sh && ./install.sh global
 ```
 
 ---

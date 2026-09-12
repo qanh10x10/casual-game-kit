@@ -10,8 +10,15 @@ const rootDir = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const isHelp = args.includes('--help') || args.includes('-h') || args.includes('help');
 const isGlobalOnly = args.includes('--global') || args.includes('-g');
+const isForce = args.includes('--force') || args.includes('-f');
 const projectFlagIdx = args.findIndex(a => a === '--project' || a === '-p');
 const customProjectPath = projectFlagIdx !== -1 && args[projectFlagIdx + 1] ? args[projectFlagIdx + 1] : null;
+
+// Detect if running from a transient cache (e.g. npx cache directory)
+const isTransient = rootDir.includes('npm-cache') ||
+                    rootDir.includes('_npx') ||
+                    rootDir.includes(path.sep + 'Temp') ||
+                    rootDir.includes(path.sep + 'tmp');
 
 if (isHelp) {
   console.log(`
@@ -23,6 +30,7 @@ Usage:
 Options:
   --global, -g         Install globally for current user (Copilot, Claude, Codex)
   --project, -p <dir>  Install into specific project directory (Cursor, Windsurf, Gemini, etc.)
+  --force, -f          Overwrite existing skill installations
   --help, -h           Show this help message
 
 Examples:
@@ -47,8 +55,33 @@ function linkOrCopy(src, dest) {
     fs.mkdirSync(parent, { recursive: true });
   }
 
-  if (fs.existsSync(dest)) {
-    warn(`  [SKIP] Already exists: ${dest}`);
+  let exists = false;
+  let isLink = false;
+  try {
+    const stat = fs.lstatSync(dest);
+    exists = true;
+    isLink = stat.isSymbolicLink();
+  } catch (_) {
+    exists = false;
+  }
+
+  if (exists) {
+    if (isForce || isTransient || isLink) {
+      try {
+        fs.rmSync(dest, { recursive: true, force: true });
+      } catch (e) {
+        warn(`  [WARN] Failed to clean existing ${dest}: ${e.message}`);
+      }
+    } else {
+      warn(`  [SKIP] Already exists: ${dest}`);
+      return;
+    }
+  }
+
+  if (isTransient) {
+    // When executing via npx, copy files permanently so they survive npx cache cleanups
+    fs.cpSync(src, dest, { recursive: true });
+    log(`  [COPY] Installed permanently: ${dest}`);
     return;
   }
 
@@ -95,6 +128,15 @@ function installGlobal() {
   const codexDir = path.join(home, '.codex', 'skills', 'casual-game-kit');
   linkOrCopy(rootDir, codexDir);
   linkOrCopy(rootDir, path.join(home, '.codex', 'skills', 'puzzle-game-ui'));
+
+  // 4. Auto-configure npm allow-git = all if needed
+  try {
+    const allowGit = execSync('npm config get allow-git', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    if (allowGit === 'none') {
+      execSync('npm config set allow-git all', { stdio: 'ignore' });
+      log('  [CONFIG] Configured npm allow-git = all for future git commands.', '\x1b[36m');
+    }
+  } catch (_) {}
 
   log('\nGlobal skills active in:');
   console.log('  - GitHub Copilot (VS Code & CLI)');

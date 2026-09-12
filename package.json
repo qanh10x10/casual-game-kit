@@ -1,11 +1,16 @@
 {
   "name": "casual-game-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Universal Agent Skill for Unity Casual & Puzzle Game UI (Copilot, Claude, Codex, Cursor, Windsurf, Antigravity, Cline)",
   "bin": {
     "casual-game-kit": "./bin/cli.js",
     "puzzle-game-kit": "./bin/cli.js",
     "puzzle-game-ui": "./bin/cli.js"
+  },
+  "scripts": {
+    "install:global": "node ./bin/cli.js --global",
+    "install:project": "node ./bin/cli.js",
+    "prepare-git": "npm config set allow-git all"
   },
   "files": [
     "bin",
