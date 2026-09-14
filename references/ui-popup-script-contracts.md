@@ -228,6 +228,135 @@ UIConfirmPurchase.cs
 Result overlays consume facts produced by gameplay/domain owners. They do not
 inspect board internals or award a second time when reopened.
 
+## Resilient Reference Resolution & Dynamic Fallbacks
+
+In casual game production, prefabs and scenes evolve frequently. Serialized
+fields (`[SerializeField]`) often get detached or unassigned (`null`) when
+reorganizing hierarchies or swapping prefab variants.
+
+### Resilient Lazy Getters
+
+Never rely solely on serialized Inspector fields for critical UI components.
+Provide resilient property getters with dynamic `transform.Find` fallbacks:
+
+```csharp
+[SerializeField] private TextMeshProUGUI levelText;
+
+public TextMeshProUGUI LevelText
+{
+    get
+    {
+        if (levelText != null) return levelText;
+        var panel = PopupPanel;
+        if (panel != null)
+        {
+            Transform t = panel.transform.Find("ScreenContent/CurrentLv")
+                ?? panel.transform.Find("CurrentLv");
+            if (t != null) levelText = t.GetComponent<TextMeshProUGUI>();
+            if (levelText == null)
+            {
+                foreach (var tmp in panel.GetComponentsInChildren<TextMeshProUGUI>(true))
+                {
+                    if (tmp.name == "CurrentLv" || tmp.name == "LevelText")
+                    {
+                        levelText = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+        return levelText;
+    }
+}
+```
+
+### Facade & Owner Auto-Binding
+
+Sub-controllers (`UIWin`, `UILose`, `UIGameplay`) attached to popups or sub-panels
+must safely resolve their parent facade (`UiManager` or `UIManager`):
+
+```csharp
+private void EnsureOwner()
+{
+    if (owner == null)
+    {
+        owner = GetComponentInParent<UiManager>()
+            ?? UnityEngine.Object.FindFirstObjectByType<UiManager>(FindObjectsInactive.Include);
+        if (owner != null) Bind(owner);
+    }
+}
+```
+
+### Exact Type & Property Verification
+
+Never guess field names on external managers. Inspect source definitions or MCP
+metadata before calling:
+- Example: check `arrowManager.spawnedArrows` vs `arrowManager.arrows`.
+- Accessing non-existent members yields CS1061 compile errors.
+
+## Win / Result Popup & Progression Sequence
+
+### Dynamic Level Resolution
+
+Never hardcode completed level text (e.g. static "LEVEL 20"):
+
+```csharp
+int completedLevel = 1;
+if (owner?.levelManager != null && owner.levelManager.ActiveLevel > 0)
+    completedLevel = owner.levelManager.ActiveLevel;
+else if (LevelManager.Instance != null && LevelManager.Instance.ActiveLevel > 0)
+    completedLevel = LevelManager.Instance.ActiveLevel;
+else
+    completedLevel = Mathf.Max(1, GameData.CurrentLevel - 1);
+
+if (LevelText != null)
+    LevelText.text = $"LEVEL {completedLevel}";
+```
+
+### Deduplicated Event Handlers
+
+When both `UIManager` and `UIWin` listen to `OnLevelCompleted`, guard `RecordWin`
+against duplicate calls in the same frame/level:
+
+```csharp
+public static void RecordWin(int currentLevel = -1)
+{
+    if (mutating) return;
+    if (currentLevel <= 0) currentLevel = GameData.CurrentLevel;
+    if (currentLevel > 0 && lastRecordedWinLevel == currentLevel) return;
+    if (currentLevel > 0) lastRecordedWinLevel = currentLevel;
+    // ... increment win metrics ...
+}
+```
+
+### Milestone Rescue / Unlock Chaining
+
+1. Each win increments rescue progress by 1 ($0.2$ fill amount).
+2. Upon reaching 5 ($1.0$), keep progress at 5 and flag `EarnedPetCount = UnlockedPetCount + 1` (`PendingPetIndex >= 0`).
+3. Animate gauge fill to $1.0$ and trigger a milestone punch effect.
+4. When the player clicks Continue or finishes rewarded ad, trigger the chained unlock dialog (`UIPopupWinPet`).
+5. Only upon claiming the pet from `UIPopupWinPet` reset the progress counter to 0 for the next cycle.
+
+## Booster Unlocking, Pacing & Onboarding Gifts
+
+1. **Centralized Level Constants:** Define explicit unlock milestones:
+   ```csharp
+   public const int UnlockLevelRuler = 3;
+   public const int UnlockLevelHint = 4;
+   public const int UnlockLevelEraser = 5;
+   public const int UnlockLevelMagicWand = 6;
+   ```
+2. **Onboarding Gifts Idempotency:** When a player reaches or exceeds a booster unlock level for the first time, grant starter quantity (e.g. 2 boosters) and record a persistent flag:
+   ```csharp
+   if (level >= UnlockLevelRuler && PlayerPrefs.GetInt("ArrowGame_BoosterGift_GridLines", 0) == 0)
+   {
+       PlayerPrefs.SetInt("ArrowGame_BoosterGift_GridLines", 1);
+       GameData.GridLines.Value += 2;
+       PlayerPrefs.Save();
+   }
+   ```
+3. **Synchronized Guard Conditions:** Both UI visibility (`UpdateBoosterUnlockStates`) and click actions (`OnHintClick`, `OnEraserClick`, etc.) must check the exact same unlock constants (`level >= UnlockLevelHint`), preventing unclickable or unresponsive booster buttons.
+
 ## Item list rules
 
 ```text

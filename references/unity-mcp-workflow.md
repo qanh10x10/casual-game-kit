@@ -29,3 +29,54 @@ Never promote `File` to `PlayMode`. If MCP discovery returns zero Unity tools or
 ## Current project note
 
 TowerDefense's manifest and package cache do not contain `com.unity.ai.assistant`. The project-bound relay attempt returned zero tools and repeated named-pipe disconnects. The MCP bridge evidence in the shared editor log belongs to another open project, ArrowRush-PetRescue. Treat TowerDefense hierarchy and runtime behavior as file-only evidence until the Unity AI MCP package/connector is explicitly installed and healthy in this target project.
+
+## Advanced Unity MCP Patterns & Production Playbook
+
+### 1. Hierarchy Inspection & Duplicate Detection
+
+When visual elements appear unresponsive or frozen:
+- Call `Unity_ManageGameObject` with `action: "find"`, `find_all: true`, `search_inactive: true`.
+- If multiple instances exist with identical names under the same parent (e.g., 3 `PetRescueGauge` instances under `ScreenContent`), examine their child hierarchy and components.
+- Often the topmost sibling in hierarchy is a broken or unlinked clone that obscures the working one underneath.
+
+### 2. Batch Prefab & Scene Repairs via Editor Scripts (`[MenuItem]`)
+
+When direct scene manipulation via MCP is constrained or requires atomic prefab modifications:
+1. Create a focused utility script in `Assets/Editor/` (or extend an existing menu utility):
+   ```csharp
+   [MenuItem("ArrowEscape/Clean Duplicates")]
+   public static void CleanDuplicates()
+   {
+       string path = "Assets/Prefabs/TargetPrefab.prefab";
+       GameObject root = PrefabUtility.LoadPrefabContents(path);
+       try
+       {
+           // Inspect children, destroy duplicates with Object.DestroyImmediate
+           PrefabUtility.SaveAsPrefabAsset(root, path);
+       }
+       finally
+       {
+           PrefabUtility.UnloadPrefabContents(root);
+       }
+       // Also sanitize active scene instance and call EditorSceneManager.SaveScene
+   }
+   ```
+2. Reimport via `Unity_ManageAsset(Action: "Import", Path: "Assets/Editor/...")`.
+3. Execute via `Unity_ManageMenuItem(Action: "Execute", MenuPath: "ArrowEscape/Clean Duplicates")`.
+4. Check console logs via `Unity_GetConsoleLogs` to verify execution output.
+5. Clean up temporary utility code after verifying changes.
+
+### 3. Script Compilation & Console Verification Loop
+
+Always follow this loop after editing any C# code:
+1. `Unity_ManageAsset(Action: "Import", Path: "...")` for every edited script.
+2. Poll `Unity_ManageEditor(Action: "GetState")` until `IsCompiling == false`.
+3. Call `Unity_GetConsoleLogs(maxEntries: 5)` immediately.
+4. Catch compile errors (e.g. CS1061 missing field name, CS0246 type not found) on the fly rather than leaving the editor in a broken state.
+
+### 4. Platform Build Manifest Guard (Android AAPT)
+
+- Unity's `Application Entry Point` setting determines the manifest activity.
+- If using standard `UnityPlayerActivity`, ensure `AndroidManifest.xml` does NOT declare `UnityPlayerGameActivity` with `@style/BaseUnityGameActivityTheme`.
+- Redundant GameActivity entries without GameActivity dependencies break Gradle AAPT linking (`AAPT: error: resource style/BaseUnityGameActivityTheme not found`).
+

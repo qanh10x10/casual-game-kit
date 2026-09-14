@@ -538,6 +538,84 @@ Text clips
   -> parent layout never receives preferred height
 ```
 
+## Popup Card Composition Architecture (`ScreenContent`)
+
+### Overlay Backdrop vs Interactive Card
+
+Standardize popup hierarchy to separate background dimming from animated dialog cards:
+
+```text
+PopupRoot (Full-screen stretch: 0,0 to 1,1)
+  Image (Black tint with alpha 0.7 - 0.85, Raycast Target ON)
+  ScreenContent (Interactive Card, Centered: Anchor 0.5, 0.5, Pivot 0.5, 0.5)
+    Header / Title (TMP)
+    Body / ContentArea
+    ActionButtons (Continue / AdReward)
+    CloseButton (top-right or footer)
+```
+
+Animation rule:
+- Open/Close tweens (scale 0 $\to$ 1, bounce) MUST target only `ScreenContent`.
+- The `PopupRoot` backdrop remains static to avoid screen flicker or jarring background jumps.
+
+### Duplicate GameObject Anti-Pattern
+
+A common failure in prefab merging and UI editing:
+- Multiple identical GameObjects (e.g. 3 `PetRescueGauge` instances) accidentally created under `ScreenContent`.
+- In UGUI, later siblings render **on top** of earlier siblings.
+- Scripts using `transform.Find("PetRescueGauge")` locate the *first* child (sibling index 2). The script animates sibling 2 correctly, but siblings 3 and 4 render over it with empty/static values, making features appear completely broken.
+- **Rule:** Before finalizing prefab edits, inspect sibling counts and verify child uniqueness under `ScreenContent`.
+
+## Level Progression Tree (Vertical ScrollView with Node Overlays)
+
+### Hierarchy Shape
+
+```text
+UIHome/Scroll View/Viewport/Content
+  Level1 (RectTransform, Button, Image)
+    LevelLabel (TextMeshProUGUI)
+    LevelPath (Image connector to Level2)
+    Chain (Image, pet_chain lock overlay)
+  Level2 ...
+  LevelN
+```
+
+### Dynamic Node State Contract
+
+When refreshing the level tree from `GameData.CurrentLevel`:
+
+```csharp
+int level = index + 1;
+bool current = level == GameData.CurrentLevel;
+bool passed = level < GameData.CurrentLevel;
+bool future = level > GameData.CurrentLevel;
+
+// 1. Button interactability
+ui.levelButtons[index].interactable = !future;
+
+// 2. Badge visuals & scale
+ui.levelImages[index].sprite = current ? ui.currentLevelSprite
+    : (passed ? ui.hardLevelSprite : ui.normalLevelSprite);
+ui.levelImages[index].rectTransform.sizeDelta = current
+    ? new Vector2(274f, 260f) : new Vector2(220f, 184f);
+
+// 3. Status Overlays (Chain)
+Transform chain = item.Find("Chain");
+if (chain != null)
+{
+    chain.gameObject.SetActive(future);
+}
+
+// 4. Progress connectors
+if (ui.levelPaths != null && index < ui.levelPaths.Length && ui.levelPaths[index] != null)
+{
+    bool isTop = (index == totalLevels - 1);
+    ui.levelPaths[index].gameObject.SetActive(!isTop);
+    if (!isTop) ui.levelPaths[index].sprite = passed ? ui.reachedPathSprite : ui.lockedPathSprite;
+}
+```
+
+
 ## Required AI output for layout work
 
 ```yaml

@@ -48,6 +48,11 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 - Use existing dependency direction. Do not introduce a framework, service locator, event bus, or database for one surface.
 - Preserve GUIDs and serialized references when reorganizing prefabs. Validate scene instances separately from prefab assets.
 - Treat localization keys, currency IDs, reward IDs, item IDs, and quest IDs as stable contracts.
+- Use resilient property accessors with dynamic `transform.Find` fallbacks for popup UI references (level text, coin amounts, continue buttons) rather than assuming Inspector references are wired.
+- Guard hierarchy uniqueness: verify no duplicate GameObjects (e.g. multiple gauges or buttons) stack under `ScreenContent` or card containers.
+- Enforce progression deduplication: event-driven level completion handlers must guard against duplicate calls within the same level.
+- Scale complete visual assemblies synchronously in attention animations (e.g. head, tail, line width) via DOTween scalar rather than animating isolated sub-parts.
+- Keep C# scripts in sync with Unity Editor via Unity MCP: reimport modified scripts, wait for compilation, and verify console logs for 0 errors before proceeding.
 
 ## Required output
 

@@ -72,3 +72,19 @@ Repeated children use one item prefab and a binder. Do not encode state by sibli
 ## Puzzle-specific seam
 
 The board owns rules. UI receives facts: objective progress, moves/energy, score, combo, selected cell/item, and result. UI never decides match validity, merge result, reward amount, or purchase price.
+
+## Visual Feedback & Whole-Entity Tweening (DOTween)
+
+When providing visual highlights or attention-drawing animations (e.g. Hint booster, objective pulse):
+- **Whole-Entity Scaling:** Animate the complete visual unit rather than only sub-parts. For example, in an arrow composed of a `LineRenderer`, head `Transform`, and tail `Transform`:
+  - Modulating only `headTransform.DOScale()` leaves the body static and looks disconnected.
+  - Animate a single scalar variable via `DOTween.To()` and update `head.localScale`, `tail.localScale`, and `lineRenderer.widthMultiplier` synchronously.
+- **Sorting Order Elevation:** During active attention tweening, temporarily boost the sorting order (e.g. `arrowSortingOrderMoving`) so the pulsing object renders cleanly above surrounding elements without clipping.
+- **Clean Teardown:** In `StopHighlight()`, kill the tween and explicitly reset all modulated values (`Vector3.one`, `baseLineWidth`, original sorting orders).
+
+## Progression Deduplication & Booster Pacing
+
+- **Idempotent Win Events:** Event listeners from multiple surfaces (`UIManager`, `UIWin`) must not cause double-counting. Track `lastRecordedWinLevel` in `HomeProgress` to guarantee one progression increment per completed level.
+- **Pacing & Unlock Thresholds:** Centralize booster unlock requirements as explicit constants. Both HUD display state (`UpdateBoosterUI`) and user click handlers (`OnHintClick`, etc.) must strictly check the same constant values.
+- **Starter Booster Gifting:** On reaching an unlock milestone, award starter boosters once and record a permanent `PlayerPrefs` flag to avoid infinite grants on subsequent loads.
+
