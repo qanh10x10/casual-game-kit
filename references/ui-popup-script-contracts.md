@@ -357,6 +357,190 @@ public static void RecordWin(int currentLevel = -1)
    ```
 3. **Synchronized Guard Conditions:** Both UI visibility (`UpdateBoosterUnlockStates`) and click actions (`OnHintClick`, `OnEraserClick`, etc.) must check the exact same unlock constants (`level >= UnlockLevelHint`), preventing unclickable or unresponsive booster buttons.
 
+## Sub-Screen Navigation & Full-Screen Overlay Coordination
+
+Full-screen surfaces (e.g. `UICollection`, full-screen gallery, or custom shop screens) often share screen space with persistent HUD elements like `NavigationBar`:
+
+### Dual-Guarding Navigation Bar Visibility
+
+Never rely on only one side to toggle shared navigation bars. Implement dual-guarding in both the surface controller and the central route orchestrator:
+
+1. **Top-Level Orchestrator (`UIManager.SetVisualRoute`):**
+   ```csharp
+   Transform navBar = safeArea != null ? safeArea.Find("NavigationBar") : null;
+   if (navBar != null)
+   {
+       navBar.gameObject.SetActive(route != "collection");
+   }
+   ```
+2. **Surface Controller (`UICollection.OnOpen` / `OnClose`):**
+   ```csharp
+   public void OnOpen()
+   {
+       UIPopupAnimation.ScreenOpen(gameObject);
+       SetNavigationBarVisible(false);
+       Refresh();
+   }
+
+   public void OnClose()
+   {
+       SetNavigationBarVisible(true);
+       UIPopupAnimation.ScreenClose(gameObject);
+   }
+
+   public void SetNavigationBarVisible(bool visible)
+   {
+       if (navigationBar == null)
+       {
+           Transform safeArea = transform.parent;
+           if (safeArea != null) navigationBar = safeArea.Find("NavigationBar")?.gameObject;
+           if (navigationBar == null) navigationBar = GameObject.Find("NavigationBar");
+       }
+       if (navigationBar != null) navigationBar.SetActive(visible);
+   }
+   ```
+3. **Dedicated Back-To-Home Action (`BtnBackHome`):**
+   Sub-screens must provide a distinct back button that plays SFX, closes the current surface, restores navigation HUD, and navigates back to the home route.
+
+## Milestone Chests with Timed Preview Tooltips & Idempotent Claiming
+
+When surfaces feature multi-tier progress chests (e.g. 10/20/30 item milestones awarding progressive booster packs $x1, x2, x3$):
+
+1. **Auto-Hidden Previews by Default:** Tooltips/rewards (`ChestReward`) must be inactive by default when the surface opens.
+2. **Preview on Tap (Unclaimable):** When tapped before meeting requirements, pop up `ChestReward` for 1.0 second with a smooth DOTween scale effect (`OutBack` $\rightarrow$ wait $\rightarrow$ `InBack`) then auto-deactivate via coroutine.
+3. **Claim on Tap (Claimable):** When tapped while eligible, grant rewards idempotently, pop up the reward tooltip for 1.2 seconds, and **permanently disable interaction (`btn.interactable = false`)**.
+4. **Post-Claim Lockout:** Once claimed, the button must remain non-interactable (`btn.interactable = false; btn.onClick.RemoveAllListeners();`) so players cannot click or re-trigger the chest again.
+
+```csharp
+private void OnChestClicked(int chestIndex)
+{
+    if (chestIndex < 0 || chestIndex >= 3) return;
+    if (HomeProgress.IsCollectionChestClaimed(chestIndex)) return;
+
+    int required = (chestIndex + 1) * 10;
+    int boosterAmount = chestIndex + 1;
+
+    if (HomeProgress.CanClaimCollectionChest(chestIndex))
+    {
+        if (HomeProgress.TryClaimCollectionChest(chestIndex))
+        {
+            ShowChestReward(chestIndex, 1.2f);
+            SoundManager.Instance?.PlayUIClickSFX();
+            chestTransforms[chestIndex]?.DOPunchScale(Vector3.one * 0.3f, 0.35f, 10, 1f);
+            Refresh(); // Sets btn.interactable = false
+        }
+    }
+    else
+    {
+        ShowChestReward(chestIndex, 1.0f);
+    }
+}
+```
+
+## Component Auto-Provisioning & Clean Listener Registration
+
+During `ResolveBindings()`, never assume design GameObjects already have the necessary interactive components attached:
+
+```csharp
+// 1. Auto-provision Button if missing
+Transform btnTr = screenContent.Find("BtnBackHome");
+if (btnTr != null)
+{
+    btnBackHome = btnTr.GetComponent<Button>() ?? btnTr.gameObject.AddComponent<Button>();
+}
+
+// 2. Prevent listener accumulation across re-binds
+if (btnBackHome != null)
+{
+    btnBackHome.onClick.RemoveListener(OnBackHomeClicked);
+    btnBackHome.onClick.AddListener(OnBackHomeClicked);
+    UIButtonScaleEffect.AttachTo(btnBackHome);
+}
+```
+
+## Spine SkeletonGraphic Multi-Skin Initialization
+
+When working with Spine `SkeletonGraphic` assets containing multiple numbered skins (e.g. 30 animal skins `"1"` through `"30"`):
+
+- Simply changing `initialSkinName` in code or inspector **does NOT** visually update the skeleton mesh in Unity until `Initialize(true)` is called!
+- Always guard and initialize properly:
+  ```csharp
+  public void ApplySpineSkinAndAnim(int skinIndex)
+  {
+      if (petIcon == null) return;
+      string skinName = (skinIndex + 1).ToString();
+
+      petIcon.initialSkinName = skinName;
+      petIcon.startingAnimation = "idle";
+      petIcon.startingLoop = true;
+
+      if (petIcon.Skeleton == null || petIcon.Skeleton.Data == null)
+      {
+          petIcon.Initialize(true);
+      }
+
+      if (petIcon.Skeleton != null && petIcon.Skeleton.Data != null)
+      {
+          if (petIcon.Skeleton.Data.FindSkin(skinName) != null)
+          {
+              petIcon.Skeleton.SetSkin(skinName);
+              petIcon.Skeleton.SetSlotsToSetupPose();
+          }
+          if (petIcon.AnimationState != null && petIcon.Skeleton.Data.FindAnimation("idle") != null)
+          {
+              if (petIcon.AnimationState.GetCurrent(0) == null)
+                  petIcon.AnimationState.SetAnimation(0, "idle", true);
+          }
+      }
+  }
+  ```
+
+## TextMeshPro Curved / Warped Text Mesh Modification Best Practices
+
+When creating scripts that deform or bend TextMeshPro text (e.g. curving text to match wooden banner curves):
+
+1. **Avoid Recursive StackOverflow Crashes:**
+   Calling `textComponent.ForceMeshUpdate()` fires `TMPro_EventManager.TEXT_CHANGED_EVENT`. If `TEXT_CHANGED_EVENT` callback calls `ForceMeshUpdate()`, Unity enters synchronous infinite recursion and crashes immediately to desktop without an exception log.
+2. **Never Modify Meshes in `OnValidate()`:**
+   Calling `ForceMeshUpdate()` or vertex manipulation inside `OnValidate()` causes CanvasRenderer and Undo/Prefab serialization assertion crashes. Only set `isDirty = true` in `OnValidate()`.
+3. **Dirty Flag Pattern in `LateUpdate()`:**
+   Process vertex bending in `LateUpdate()` only when parameters or text have changed.
+4. **Calculate Bounds from Visible Characters:**
+   Do not rely on `textComponent.bounds` which can be uninitialized or zero. Calculate `minX` and `maxX` directly from `charInfo.bottomLeft.x` and `charInfo.topRight.x` of all visible glyphs.
+
+```csharp
+[ExecuteInEditMode]
+[RequireComponent(typeof(TextMeshProUGUI))]
+public class TMP_CurvedText : MonoBehaviour
+{
+    [Range(-180f, 180f)] public float curveAngle = 35f;
+    public float yOffset = 0f;
+    public bool preserveGlyphAspect = true;
+
+    private TextMeshProUGUI textComponent;
+    private bool isWarping;
+    private bool isDirty = true;
+
+    private void OnValidate() => isDirty = true;
+
+    private void LateUpdate()
+    {
+        if (!textComponent) textComponent = GetComponent<TextMeshProUGUI>();
+        if (textComponent && isDirty)
+        {
+            isDirty = false;
+            ApplyCurve();
+        }
+    }
+    // ... ApplyCurve with isWarping guard and bounds calculation ...
+}
+```
+
+## Manager & API Disambiguation (Preventing CS1061)
+
+1. **Disambiguate Similar Class Names:** Watch out for project naming collisions (e.g. `UIManager` orchestrator vs legacy `UiManager` toast wrapper).
+2. **Verify SFX Method Signatures:** Never guess method names on sound managers (e.g. `PlayUIClickSFX()` vs `PlayButtonClickSFX()`). Always check existing calls in nearby UI scripts.
+
 ## Item list rules
 
 ```text

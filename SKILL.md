@@ -51,6 +51,12 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 - Use resilient property accessors with dynamic `transform.Find` fallbacks for popup UI references (level text, coin amounts, continue buttons) rather than assuming Inspector references are wired.
 - Guard hierarchy uniqueness: verify no duplicate GameObjects (e.g. multiple gauges or buttons) stack under `ScreenContent` or card containers.
 - Enforce progression deduplication: event-driven level completion handlers must guard against duplicate calls within the same level.
+- Auto-provision missing components (`GetComponent<Button>() ?? gameObject.AddComponent<Button>()`) during binding and sanitize listeners (`RemoveListener` before `AddListener`) to prevent duplicate callbacks.
+- Dual-guard persistent HUD elements (e.g. `NavigationBar` visibility) in both the sub-screen controller (`OnOpen`/`OnClose`) and the central route orchestrator (`UIManager.SetVisualRoute`).
+- Structure milestone chests with timed auto-closing preview tooltips (1.0s) and permanent interaction lockout (`btn.interactable = false`) once claimed.
+- Force visual mesh updates on Spine `SkeletonGraphic` multi-skin assets by calling `Initialize(true)` when dynamically changing `initialSkinName`.
+- Prevent Unity editor crashes in TMP mesh modifiers: never call `ForceMeshUpdate()` in `TEXT_CHANGED_EVENT` (causes infinite recursion stack overflow) or `OnValidate()`; use dirty flags in `LateUpdate()`.
+- Disambiguate project manager names (e.g. `UIManager` vs `UiManager`) and verify SFX method signatures from source before coding.
 - Scale complete visual assemblies synchronously in attention animations (e.g. head, tail, line width) via DOTween scalar rather than animating isolated sub-parts.
 - Keep C# scripts in sync with Unity Editor via Unity MCP: reimport modified scripts, wait for compilation, and verify console logs for 0 errors before proceeding.
 
