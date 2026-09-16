@@ -23,7 +23,10 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 3. **Explicit States:** Every button/item must handle loading, empty, locked, available, selected, owned, claimed, and error. Never communicate state through color alone.
 4. **Hierarchy:** Semantic and shallow: `Screen` -> `SafeArea` -> `Header`, `Content`, `Footer`, `Overlay`.
 5. **Preserve GUIDs:** Never delete and recreate serialized references/prefabs when refactoring.
-6. **Detailed References:** Refer to `.agents/skills/puzzle-game-ui/references/` (or `~/.agents/skills/puzzle-game-ui/references/`):
+6. **File-first:** Do not call Unity MCP unless the current request explicitly asks for it.
+7. **Code layout:** Follow `ui-code-layout.md` — Home `UIManager` vs gameplay `UiManager`; empty `UIHome` facade stays.
+8. **Detailed References:** Refer to `.agents/skills/casual-game-kit/references/` (or `~/.agents/skills/casual-game-kit/references/`):
+   - `ui-code-layout.md`: Home/gameplay script split, routes, prefab ownership.
    - `ugui-layout-blueprint.md`: 1080x1920 Canvas, anchors, pivots, Safe Area, ScrollRect.
    - `ui-manager-blueprint.md`: Central UIManager prefab ownership.
    - `ui-popup-script-contracts.md`: Popup, controller, and item boundaries.

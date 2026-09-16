@@ -1,4 +1,26 @@
-# Project Audit: TowerDefense
+# Project Audit Template
+
+Replace this table with the **target** project's files. The rows below are a
+worked example, not a second product to copy.
+
+Default evidence is File. Do not call Unity MCP for the audit unless the user
+asked for Unity MCP.
+
+## Casual puzzle ownership (copy if the project matches)
+
+| Area | Look here first |
+| --- | --- |
+| Home coordinator | `UIManager` (often under `Script/Other/UI/`) |
+| Home serialized type | empty `UIHome : UIManager` |
+| Gameplay facade | `UiManager` (different type) + `UIGameplay` / `UIWin` / `UILose` |
+| Home state | `HomeProgress` (own save prefix) |
+| Economy / settings | `GameData` |
+| Prefab | `UIManager.prefab` sections under `SafeArea` named by owner |
+| Gameplay Canvas | scene-owned; Home disables it |
+
+See `ui-code-layout.md` for the full split.
+
+## Example: TowerDefense (historical)
 
 ## Verified facts
 
@@ -28,5 +50,5 @@
 ## Gaps to mark, not hide
 
 - No shop controller/data model is present in audited `_Game` paths; specify it as a new surface, not as an existing feature.
-- Unity MCP relay is configured in Codex, but TowerDefense lacks `com.unity.ai.assistant` in its manifest/cache and target discovery returned zero Unity tools. File evidence is valid; MCP hierarchy/Play Mode evidence remains unverified.
+- File evidence is valid without Unity MCP. Do not open a Unity MCP session to fill this table unless the user asked. MCP hierarchy/Play Mode remain unverified until requested and observed.
 - Existing `DataManager` is empty; do not assume it is the persistence owner.

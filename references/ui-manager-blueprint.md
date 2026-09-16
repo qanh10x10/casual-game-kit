@@ -2,12 +2,16 @@
 
 Use this reference when the request creates or reorganizes a central Unity UI root.
 It defines ownership and serialized wiring; it is not a reason to replace an
-existing router or add a new framework.
+existing router or add a new framework. For the Home/gameplay script split, also
+read `ui-code-layout.md`. Do not use Unity MCP to discover this mapping unless the
+user asked for Unity MCP.
 
-## Decision gate
-
-1. Search first for existing `UIManager`, `UiManager`, `UIMainMenu`, `UIMainGame`,
+## Decision gateHome`, `UIMainMenu`, `UIMainGame`,
    popup manager, canvas root, scene router, and `DontDestroyOnLoad` owner.
+   Disambiguate `UIManager` (Home) vs `UiManager` (gameplay) from source, not names.
+2. If one owner already controls routes, extend it. Keep its class name, scene
+   references, public methods, UnityEvents, and prefab GUIDs. An empty `UIHome : UIManager`
+   subclass is a serialized compatibility facade — do not delete it to “clean up”yOnLoad` owner.
 2. If one owner already controls routes, extend it. Keep its class name, scene
    references, public methods, UnityEvents, and prefab GUIDs.
 3. Create `UIManager` only when the project has no central UI owner and the

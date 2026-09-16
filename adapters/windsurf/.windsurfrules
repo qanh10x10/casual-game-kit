@@ -13,5 +13,7 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 - Reward claims are idempotent (validate -> apply once -> persist -> emit refresh event).
 - Every interactive element must define disabled reasons and explicit visual states.
 - Hierarchy structure: Screen -> SafeArea -> Header / Content / Footer / Overlay.
+- Follow `ui-code-layout.md` for Home coordinator (`UIManager`) vs gameplay facade (`UiManager`).
+- Do not call Unity MCP unless the current request explicitly asks for it.
 - Detailed specs and blueprints located in:
-  `~/.agents/skills/puzzle-game-ui/references/` or `./.agents/skills/puzzle-game-ui/references/`
+  `~/.agents/skills/casual-game-kit/references/` or `./.agents/skills/casual-game-kit/references/`

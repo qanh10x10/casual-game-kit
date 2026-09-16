@@ -14,12 +14,15 @@
 - Reward/shop transactions validate before mutation and persist once after success.
 - Event subscriptions are paired with unsubscriptions.
 
-## Unity MCP gate
+## Unity MCP gate (only if the user asked for Unity MCP)
+
+Skip this gate unless the current request explicitly asked to use Unity MCP.
 
 - MCP response identifies target project/editor, not merely any Unity process.
 - Hierarchy read matches contract.
 - Prefab asset and scene instance checked separately.
 - Console read after observation shows whether diagnostics are clean, blocked, or unrelated.
+- If MCP is unused by design, report `MCP skipped (not requested)` — that is not a failure.
 
 ## Play Mode gate
 
@@ -27,7 +30,7 @@ For Daily Reward: open, locked future day, claim current day once, repeat claim,
 
 ## Report format
 
-```text
+```text (MCP only if requested)
 Validation: PASS | PARTIAL | BLOCKED
 Commands/tools: <exact commands or MCP calls>
 Evidence: File/MCP/PlayMode/Device

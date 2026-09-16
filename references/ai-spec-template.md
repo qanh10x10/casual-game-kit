@@ -6,7 +6,8 @@ Copy this block before implementing any puzzle-game UI.
 mode: Specify | Implement | Verify
 surface: DailyReward
 target_project: absolute Unity project path
-target_editor_pid: exact PID or unknown
+unity_mcp: not-requested | requested
+target_editor_pid: exact PID or unknown (only if Unity MCP was requested)
 target_scene: Assets/_Game/Scenes/MainMenu.unity
 target_prefab: Assets/_Game/Prefabs/UIMainMenu.prefab
 user_job: "One sentence from player perspective"
@@ -16,7 +17,7 @@ secondary_actions: [Close, Reset cycle]
 evidence:
   source_files: []
   source_assets: []
-  mcp_level: File | MCP | PlayMode | Device
+  mcp_level: File | MCP | PlayMode | Device  # MCP/PlayMode only if requested and observed
   unknowns: []
 
 states:

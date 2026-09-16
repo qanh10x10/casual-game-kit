@@ -1,8 +1,10 @@
-# Unity MCP Workflow
+# Unity MCP Workflow (opt-in)
 
-## Target gate
+**Default: do not use Unity MCP.** File reads of `.cs`, `.prefab`, `.unity`, `.asset`, and `.meta` are enough for audit, specify, and most implement work.
 
-Before calling Unity MCP, identify exact project path and editor PID. Multiple Unity editors may be open. Process presence alone is not target proof.
+Call Unity MCP only when the **current user request** explicitly asks for it, for example: inspect live hierarchy, enter Play Mode, read Console, mutate a prefab/scene through the Editor, or “use Unity MCP”. A connected editor, installed MCP server, or prior session that used MCP is not permission. If MCP is not requested, skip this file.
+
+When requested, identify exact project path and editor PID first. Multiple Unity editors may be open. Process presence alone is not target proof.
 
 Expected read-only sequence:
 
@@ -24,7 +26,9 @@ Mutation requires an approved surface contract and exact asset paths. Before mut
 - `PlayMode`: target scene entered Play Mode and behavior observed.
 - `Device`: device/simulator behavior observed.
 
-Never promote `File` to `PlayMode`. If MCP discovery returns zero Unity tools or `Unity not available`, report `MCP blocked`; continue only with file evidence for specification work.
+Never promote `File` to `PlayMode`. If the user asked for MCP and discovery returns zero Unity tools or `Unity not available`, report `MCP blocked` and continue with file evidence. Do not retry MCP on a different open project.
+
+After a user-requested C# edit, file diff / source build is enough unless they also asked to reimport and check the Unity Console.
 
 ## Current project note
 

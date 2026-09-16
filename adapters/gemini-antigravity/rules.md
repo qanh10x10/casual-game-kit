@@ -5,4 +5,6 @@ Apply when modifying or reviewing Unity UI code (`Assets/**/*.cs`) or prefabs (`
 - Strict separation of authoring definitions vs player state.
 - Idempotent reward transactions with explicit event emissions.
 - Semantic hierarchy: Screen -> SafeArea -> Header/Content/Footer/Overlay.
-- Full reference blueprints available in skill `puzzle-game-ui`.
+- Follow `ui-code-layout.md` for Home `UIManager` vs gameplay `UiManager`.
+- Do not call Unity MCP unless the current request explicitly asks for it.
+- Full reference blueprints available in skill `casual-game-kit`.

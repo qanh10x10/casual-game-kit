@@ -7,4 +7,6 @@ When working on Unity UI tasks (Home, HUD, Daily Reward, Quests, Shop, Popups, R
 2. **Data Boundaries:** ScriptableObjects and CSVs are read-only definitions. Player state and view models are mutable. UI never directly mutates definition assets.
 3. **Idempotent Rewards:** Validate -> Apply -> Persist -> Emit Refresh Event.
 4. **Layout:** 1080x1920 reference resolution, Safe Area adapter, shallow semantic hierarchy (`Screen/SafeArea/Header|Content|Footer|Overlay`).
-5. **Reference Blueprints:** Check `.agents/skills/puzzle-game-ui/references/` or `~/.agents/skills/puzzle-game-ui/references/`.
+5. **Code layout:** Follow `ui-code-layout.md` for Home `UIManager` vs gameplay `UiManager`.
+6. **No Unity MCP by default:** Call it only when the current request explicitly asks.
+7. **Reference Blueprints:** Check `.agents/skills/casual-game-kit/references/` or `~/.agents/skills/casual-game-kit/references/`.

@@ -6,3 +6,5 @@ When auditing or building Unity puzzle game UI:
 - Formulate a Surface Contract using `references/ai-spec-template.md` before changing code or prefabs.
 - Enforce strict separation between authoring definitions (ScriptableObjects/CSVs) and mutable player state.
 - Keep reward claims idempotent and UI hierarchies semantic (`Screen/SafeArea/Header|Content|Footer|Overlay`).
+- Follow `references/ui-code-layout.md` for Home coordinator vs gameplay facade (`UIManager` vs `UiManager`).
+- Do not call Unity MCP unless the current request explicitly asks for it. File evidence is the default.

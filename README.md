@@ -83,16 +83,17 @@ casual-game-kit/
 ├── package.json                      # npm package configuration
 ├── agents/
 │   └── openai.yaml                   # Model and runtime configuration
-├── references/                       # 11 comprehensive architecture blueprints
+├── references/                       # architecture blueprints
 │   ├── ai-spec-template.md           # Surface Contract copy-paste template
 │   ├── data-and-assets-blueprint.md  # ScriptableObject, CSV, and runtime state boundaries
 │   ├── data-contracts.md             # Currency, reward, and transaction schemas
 │   ├── framework.md                  # Architectural boundaries and code limits
 │   ├── project-audit.md              # Project audit evidence template
 │   ├── ugui-layout-blueprint.md      # 1080x1920 layout, SafeArea, ScrollRect standards
+│   ├── ui-code-layout.md             # Home/gameplay script split, routes, prefab ownership
 │   ├── ui-manager-blueprint.md       # Central UIManager prefab and root composition
 │   ├── ui-popup-script-contracts.md  # Popup controller and item contracts
-│   ├── unity-mcp-workflow.md         # Unity MCP integration workflow
+│   ├── unity-mcp-workflow.md         # Unity MCP (opt-in; skip unless the user asks)
 │   ├── ux-surfaces.md                # Recipes for each surface (Home, Shop, Quests, etc.)
 │   └── validation.md                 # Acceptance criteria and completion gates
 ├── adapters/                         # Ready-to-use IDE and Agent rule adapters
@@ -164,6 +165,9 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 4. **Explicit Visual States:**
    Every button and interactive element must account for all states: normal, loading, empty, locked, available, selected, owned, claimed, and error. Never use color alone to communicate state.
 
+5. **File-first, Unity MCP opt-in:**
+   Read scripts and serialized assets by default. Call Unity MCP only when the current request explicitly asks for it.
+
 ---
 
 ## 6. Blueprint Documentation Map
@@ -172,12 +176,13 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 |---|---|
 | [`ai-spec-template.md`](references/ai-spec-template.md) | Standard copy-paste surface contract template |
 | [`data-and-assets-blueprint.md`](references/data-and-assets-blueprint.md) | ScriptableObjects, runtime view-models, CSV importing |
-| [`data-contracts.md`](references/data-contracts.md) | Schemas for currency, quests, rewards, and transactions |
+| [`data-contracts.md`](references/data-contracts.md) | Currency, quest, reward, and transaction schemas |
 | [`framework.md`](references/framework.md) | Architecture boundaries and layer separation |
 | [`ugui-layout-blueprint.md`](references/ugui-layout-blueprint.md) | 1080x1920 reference resolution, Safe Area, anchors, pivots |
+| [`ui-code-layout.md`](references/ui-code-layout.md) | Home coordinator vs gameplay facade, handlers, routes, prefab sections |
 | [`ui-manager-blueprint.md`](references/ui-manager-blueprint.md) | Root prefab UIManager ownership and script mapping |
 | [`ui-popup-script-contracts.md`](references/ui-popup-script-contracts.md) | Popup, controller, and item boundary contracts |
-| [`unity-mcp-workflow.md`](references/unity-mcp-workflow.md) | Best practices when using Unity AI MCP |
+| [`unity-mcp-workflow.md`](references/unity-mcp-workflow.md) | Unity MCP only when the user explicitly requests it |
 | [`ux-surfaces.md`](references/ux-surfaces.md) | Implementation recipes for Home, HUD, Daily Reward, Quests, Shop |
 | [`validation.md`](references/validation.md) | Acceptance criteria, completion gates, and verification |
 

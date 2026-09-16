@@ -10,5 +10,7 @@ When designing or modifying Unity UI:
 2. Keep authoring data (ScriptableObjects/CSVs) strictly immutable at runtime.
 3. Make all reward and currency transactions idempotent.
 4. Keep hierarchy clean: Screen -> SafeArea -> Header / Content / Footer / Overlay.
+5. Follow `ui-code-layout.md` for Home coordinator vs gameplay facade (`UIManager` vs `UiManager`).
+6. Do not call Unity MCP unless the current request explicitly asks for it.
 
 User Request: {{{ input }}}
