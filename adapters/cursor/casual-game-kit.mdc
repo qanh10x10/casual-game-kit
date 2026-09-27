@@ -21,7 +21,8 @@ surface -> user job -> states -> actions -> data source -> hierarchy -> bindings
 1. **Definitions vs State:** Definitions live in authoring assets (ScriptableObject, CSV). Player progress, claims, and currencies live in runtime state models. UI must never mutate authoring assets directly.
 2. **Idempotent Claims:** Validate availability -> Apply reward entries once -> Persist state -> Emit refresh event.
 3. **Explicit States:** Every button/item must handle loading, empty, locked, available, selected, owned, claimed, and error. Never communicate state through color alone.
-4. **Hierarchy:** Semantic and shallow: `Screen` -> `SafeArea` -> `Header`, `Content`, `Footer`, `Overlay`.
+4. **Hierarchy:** Semantic and shallow: `Screen` -> existing inset owner -> `Header`, `Content`, `Footer`, `Overlay`; a literal `SafeArea` object is optional when a verified plugin owns insets.
+5. **Plugin Reuse:** Inventory safe-area, popup/tween, localization, pooling, masking/particles, ads/IAP, and save/state; keep one verified owner per concern.
 5. **Preserve GUIDs:** Never delete and recreate serialized references/prefabs when refactoring.
 6. **File-first:** Do not call Unity MCP unless the current request explicitly asks for it.
 7. **Code layout:** Follow `ui-code-layout.md` — Home `UIManager` vs gameplay `UiManager`; empty `UIHome` facade stays.

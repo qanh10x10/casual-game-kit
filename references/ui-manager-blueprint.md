@@ -71,8 +71,11 @@ UIManager                         (UIManager.cs)
       BlockerLayer                 (input lock/raycast blocker)
 ```
 
-Use one `Canvas` and one safe-area owner. Screen roots and popup roots may be
-inactive by default; `UIManager` activates exactly the requested route.
+Use one `Canvas` and one verified inset owner. Reuse a serialized project plugin
+component when present; `SafeArea` in the diagram is a role, not a required object
+name or custom script. Do not add a second inset calculator merely because a legacy
+`safeArea` field is null. Screen and popup roots may be inactive by default;
+`UIManager` activates exactly the requested route.
 
 ### Persistent manager plus scene UI
 
@@ -173,7 +176,7 @@ Before saving the prefab, output and verify:
 [ ] UIManager component is on the prefab root.
 [ ] Every required root reference points to the correct child.
 [ ] No scene-only object is serialized into a reusable prefab asset.
-[ ] Canvas, scaler, safe area, sorting order, and raycast blocker match existing values.
+[ ] Canvas, scaler, verified inset plugin/owner, sorting order, and raycast blocker match existing values.
 [ ] Button callbacks target owner methods, not nested implementation details.
 [ ] Repeated item prefab has one binder and explicit state markers.
 [ ] Existing GUIDs and scene instance overrides remain intact.

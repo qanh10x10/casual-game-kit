@@ -63,21 +63,43 @@ Never use a fixed `1080 x 1920` size on a full-screen child whose parent already
 stretches to the Canvas. Fixed reference dimensions belong on the CanvasScaler,
 not on every descendant.
 
-### Safe area
+### Safe area and inset plugins
+
+Audit before changing hierarchy or code:
+
+```text
+1. Search package/plugin manifests and first-party/vendor source for safe-area or notch support.
+2. Resolve the component script GUID into the scene/prefab instance.
+3. Record which RectTransform receives the component and its serialized axis/settings.
+4. Check scene overrides separately from prefab defaults.
+5. Keep that component as the only inset owner unless runtime/device evidence proves it insufficient.
+```
+
+Accepted shapes include:
 
 ```text
 Canvas
-  SafeArea (full-screen RectTransform, runtime inset owner)
+  GameplayRoot + existing SafeAreaPluginComponent
     ScreenLayer
     PopupLayer
-    FeedbackLayer
+
+Canvas
+  InsetRoot (name is project-defined) + existing SafeAreaPluginComponent
+    Header
+    Content
+    Footer
 ```
 
-The safe-area script owns inset calculation. Children anchor to `SafeArea` and
-use normal layout; they must not each subtract notch/status-bar offsets.
+A literal child named `SafeArea` is a documentation role, not a required object.
+When a project already uses a plugin such as `Crystal.SafeArea`, preserve its
+component, GUID, `ConformX`/`ConformY` policy, and scene wiring. Do not add custom
+`Screen.safeArea` calculations, device-specific padding, or a second inset script.
+Children use normal anchors/layout beneath the proven inset owner.
 
-If no safe-area component exists, document that as an unverified device risk.
-Do not invent device-specific top padding from a screenshot.
+If a plugin is installed but not serialized on the live target hierarchy, report
+`installed, not wired`; do not count package presence as compliance. If no inset
+owner exists, document an unverified device risk. Do not infer failure solely from
+a null legacy `safeArea` field when another serialized plugin owns the live inset.
 
 ## Anchor and pivot recipes
 
@@ -133,8 +155,8 @@ long localization, banners, and device safe areas before locking values.
 
 ## 1080 x 1920 reference zones
 
-Apply these inside `SafeArea`, so device insets remain the safe-area owner's
-responsibility:
+Apply these below the verified inset owner (plugin component or project-native
+safe-area root), so device insets remain that single owner's responsibility:
 
 ```text
 Home
